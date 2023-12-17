@@ -26,9 +26,13 @@ import { url } from 'inspector';
 
 interface Props {
     editor: Editor | null;
+    onOpenImageClick?() : void
 }
 
-const ToolBar: FC<Props> = ({editor}): JSX.Element | null => {
+const ToolBar: FC<Props> = ({
+    editor, 
+    onOpenImageClick,
+}): JSX.Element | null => {
     if(!editor) return null;
 
     const options = [
@@ -167,7 +171,7 @@ const ToolBar: FC<Props> = ({editor}): JSX.Element | null => {
         <div className="flex items-center space-x-3">
         <EmbedYoutube onSubmit={handleEmbedYoutube}/>
 
-        <Button>
+        <Button onClick={onOpenImageClick}>
             <BsImageFill/>
         </Button>
         </div>
