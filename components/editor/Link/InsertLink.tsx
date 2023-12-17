@@ -16,10 +16,6 @@ const InsertLink: FC<Props> = ({ onSubmit }): JSX.Element => {
         hideForm();
     };
 
-    const resetForm = () => {
-
-    };
-
     const hideForm = () => setVisible(false);
     const showForm = () => setVisible(true);
 

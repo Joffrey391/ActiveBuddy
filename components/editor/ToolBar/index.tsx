@@ -21,6 +21,8 @@ import Button from './Button';
 import Underline from '@tiptap/extension-underline';
 import InsertLink from '../Link/InsertLink';
 import { linkOption } from '../Link/LinkForm';
+import EmbedYoutube from './EmbedYoutube';
+import { url } from 'inspector';
 
 interface Props {
     editor: Editor | null;
@@ -65,6 +67,13 @@ const ToolBar: FC<Props> = ({editor}): JSX.Element | null => {
         if(openInNewTab) commands.setLink({href: url, target: "_blank" });
         else commands.setLink({ href: url });
     };
+
+    const handleEmbedYoutube = (url: string) => {
+        editor.chain()
+        .focus()
+        .setYoutubeVideo({ src: url })
+        .run();
+    }
 
     const Head = () => {
         return <div className='flex items-center space-x-2 text-primary-dark dark:text-primary'>
@@ -156,9 +165,7 @@ const ToolBar: FC<Props> = ({editor}): JSX.Element | null => {
         <div className="h-4 w-[1px] bg-secondary-dark dark:bg-secondary-light mx-8 "/>
 
         <div className="flex items-center space-x-3">
-        <Button>
-            <BsYoutube/>
-        </Button>
+        <EmbedYoutube onSubmit={handleEmbedYoutube}/>
 
         <Button>
             <BsImageFill/>
