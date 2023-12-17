@@ -1,25 +1,41 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
+import { validateUrl } from "../EditorUtils";
 
 interface Props {
     visible: boolean;
     onSubmit(link: linkOption): void;
+    initialState?: linkOption;
 }
 
 export type linkOption = {
     url: string;
     openInNewTab: boolean;
+};
+
+const defaultLink = {
+    url: '', 
+    openInNewTab: false,
 }
 
 const LinkForm: FC<Props> = ({
     visible,
+    initialState,
     onSubmit,
 }): JSX.Element | null => {
-    const [link, setLink] = useState<linkOption>({url: '', openInNewTab: false})
+    const [link, setLink] = useState<linkOption>(defaultLink)
 
     const handleSubmit = () => {
-        if(!link.url.trim()) return;
-        onSubmit(link);
+        onSubmit({...link, url: validateUrl(link.url)});
+        resetForm();
     }
+
+    const resetForm = () => {
+        setLink({...defaultLink});
+    }
+
+    useEffect(() => {
+        if(initialState) setLink({ ...initialState });
+    }, [initialState]);
 
     if (!visible) return null;
 
