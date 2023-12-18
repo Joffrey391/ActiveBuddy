@@ -1,5 +1,5 @@
 import AdminLayout from '@/components/layout/AdminLayout';
-import  Editor, { FinalPost }  from '../../../components/editor';
+import  Editor, { FinalPost }  from '../../../../components/editor';
 import { NextPage } from 'next';
 import axios from 'axios';
 
