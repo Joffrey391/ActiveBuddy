@@ -17,7 +17,7 @@ import ThumbnailSelector from './ThumbnailSelector';
 export interface FinalPost extends SeoResult {
     title: string;
     content: string;
-    thumbnail?: File | string
+    thumbnail?: File | string;
 }
 
 
