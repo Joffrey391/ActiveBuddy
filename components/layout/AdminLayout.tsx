@@ -2,10 +2,12 @@ import { Children, FC, ReactNode } from 'react';
 import AdminNav from '../common/AdminNav';
 import { AiOutlineContacts, AiOutlineContainer, AiOutlineDashboard, AiOutlineFileAdd, AiOutlineMail, AiOutlineTeam } from 'react-icons/ai';
 import Link from 'next/link';
+import AppHead from '../common/AppHead';
 
 
 interface Props {
-    children: ReactNode
+    children: ReactNode;
+    title?: string;
 }
 
 const navItems = [
@@ -16,16 +18,21 @@ const navItems = [
     { href: '/admin/contact', icon: AiOutlineContacts, label: 'Contacts' },
 ];
 
-const AdminLayout: FC<Props> = ({children}): JSX.Element => {
-    return <div className='flex'>
-        <AdminNav navItems={navItems}/>
-        <div className='flex-1 p-4'>{children}</div>
-        <Link legacyBehavior href='/admin/post/create'>
-            <a className='bg-secondary-dark dark:bg-secondary-light text-primary dark:text-primary-dark fixed z-10 right-10 bottom-10 p-3 rounded-full hover:scale-90 shadow-sm transition'>
-                <AiOutlineFileAdd size={24} />    
-            </a>        
-        </Link>
-    </div>;
+const AdminLayout: FC<Props> = ({title, children}): JSX.Element => {
+    return (
+        <>
+        <AppHead title={title} />
+        <div className='flex'>
+            <AdminNav navItems={navItems}/>
+            <div className='flex-1 p-4'>{children}</div>
+            <Link legacyBehavior href='/admin/post/create'>
+                <a className='bg-secondary-dark dark:bg-secondary-light text-primary dark:text-primary-dark fixed z-10 right-10 bottom-10 p-3 rounded-full hover:scale-90 shadow-sm transition'>
+                    <AiOutlineFileAdd size={24} />    
+                </a>        
+            </Link>
+        </div>;
+        </>
+        );
 };
 
 export default AdminLayout;
