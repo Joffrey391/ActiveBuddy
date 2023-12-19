@@ -3,7 +3,7 @@ import { NextPage } from 'next';
 interface Props {}
 
 const Admin: NextPage<Props> = () => {
-  return <div>index</div>;
+  return <div>Home</div>;
 };
 
 export default Admin;

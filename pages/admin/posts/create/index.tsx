@@ -1,36 +1,28 @@
 import AdminLayout from '@/components/layout/AdminLayout';
-import  Editor, { FinalPost }  from '../../../../components/editor';
+import Editor, { FinalPost } from '../../../../components/editor';
 import { NextPage } from 'next';
 import axios from 'axios';
+import { generateFormData } from '@/utils/helper';
 
-interface Props {}
+interface Props { }
 
 const Create: NextPage<Props> = () => {
     const handleSubmit = async (post: FinalPost) => {
         try {
-            const formData = new FormData();
-            for(let key in post) {
-                const value = (post as any)[key];
-                if(key === 'tags' && value.trim()) {
-                    const tags = value.split(',').map((tag: string) => tag.trim());
-                    formData.append('tags', JSON.stringify(tags));
-                } else formData.append(key, value);
-            };
+            const formData = generateFormData(post);
             const { data } = await axios.post('/api/posts', formData);
             console.log(data);
-
         } catch (error: any) {
             console.log(error.response.data);
         }
-        
     };
 
     return (
         <AdminLayout title='New Post'>
             <div className="max-w-4xl mx-auto">
-                <Editor onSubmit={handleSubmit}/>
+                <Editor onSubmit={handleSubmit} />
             </div>
-        </AdminLayout>    
+        </AdminLayout>
     );
 };
 
