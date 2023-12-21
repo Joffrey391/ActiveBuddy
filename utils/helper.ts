@@ -1,4 +1,5 @@
 import { FinalPost } from "@/components/editor";
+import dbConnect from "@/lib/dbConnect";
 
 export const generateFormData = (post: FinalPost) => {
     const formData = new FormData();
@@ -10,4 +11,4 @@ export const generateFormData = (post: FinalPost) => {
         } else formData.append(key, value);
     };
     return formData;
-}
+};

@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
+import dbConnect from "./dbConnect";
+import Post from "@/models/Post";
 
 interface FormidablePromise<T> {
     files: { [key: string]: formidable.File };
@@ -27,4 +29,10 @@ export const readFile = async <T extends object>(
     }
 
     return result;
+};
+
+export const readPostsFromDb = async (limit: number, pageNo: number) => {
+    const skip = limit * pageNo;
+    await dbConnect();
+    await Post.find().skip(skip).limit(limit);
 };

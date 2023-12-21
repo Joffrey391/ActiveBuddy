@@ -28,7 +28,7 @@ interface ServerSideResponse {
 }
 
 export const getServerSideProps: GetServerSideProps<ServerSideResponse> = async () => {
-
+    await readPostsFromDb();
 }
 
 export default Posts;
