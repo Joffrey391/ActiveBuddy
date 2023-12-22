@@ -1,7 +1,9 @@
+import InfiniteScrollPost from '@/components/common/InfiniteScrollPost';
 import PostCard from '@/components/common/PostCard';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { formatPosts, readPostsFromDb } from '@/lib/utils';
 import { PostDetail } from '@/utils/types';
+import axios from 'axios';
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from 'next';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -14,15 +16,30 @@ const limit = 9;
 
 const Posts: NextPage<Props> = ({posts}) => {
     const [postsToRender, setPostsToRender] = useState(posts);
+    const [hasMorePosts, setHasMorePosts] = useState(true);
+
+    const fetchMorePosts = async () => {
+        try {
+            pageNo++;
+            const { data } = await axios(`/api/posts?limit=${limit}&pageNo=${pageNo}`);
+            if(data.posts.length < limit){
+                setPostsToRender([...postsToRender, ...data.posts]);
+                setHasMorePosts(false);
+            } else setPostsToRender([...postsToRender, ...data.posts]);     
+        } catch (error) {
+            setHasMorePosts(false);
+            console.log(error);
+        }
+    };
     return (
         <AdminLayout>
-            <div className="max-w-4xl mx-auto p-3">
-                <div className="grid grid-cols-3 gap-4">
-                    {postsToRender?.map((post) => (
-                        <PostCard key={post.slug} post={post} />
-                    ))}
-                </div>
-            </div>
+            <InfiniteScrollPost 
+                hasMore={hasMorePosts} 
+                next={fetchMorePosts} 
+                dataLength={postsToRender.length} 
+                posts={postsToRender} 
+                showControls
+            />
         </AdminLayout>
     )
 };

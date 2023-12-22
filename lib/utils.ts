@@ -33,6 +33,8 @@ export const readFile = async <T extends object>(
 };
 
 export const readPostsFromDb = async (limit: number, pageNo: number) => {
+    if(!limit || limit > 10) 
+        throw Error('Please use limit under 10 and valid pageNo');
     const skip = limit * pageNo;
     await dbConnect();
     const posts = await Post.find()
@@ -42,15 +44,16 @@ export const readPostsFromDb = async (limit: number, pageNo: number) => {
     .limit(limit);
 
     return posts;
+    
 };
 
 export const formatPosts = (posts: PostModelSchema[]): PostDetail[] => {
-    return posts.map(posts => ({
-        title: posts.title,
-        slug: posts.slug,
-        createdAt: posts.createdAt.toString(),
-        thumbnail: posts.thumbnail?.url || '',
-        meta: posts.meta,
-        tags: posts.tags,
+    return posts.map((post) => ({
+        title: post.title,
+        slug: post.slug,
+        createdAt: post.createdAt.toString(),
+        thumbnail: post.thumbnail?.url || '',
+        meta: post.meta,
+        tags: post.tags,
     }));
 };

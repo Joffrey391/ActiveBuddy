@@ -1,9 +1,11 @@
 import cloudinary from "@/lib/cloudinary";
 import dbConnect from "@/lib/dbConnect";
-import { readFile } from "@/lib/utils";
+import { formatPosts, readFile, readPostsFromDb } from "@/lib/utils";
 import { postValidationSchema, validateSchema } from "@/lib/validator";
 import Post from "@/models/Post";
+import { IncomingPost } from "@/utils/types";
 import formidable from "formidable";
+import IncomingForm from "formidable/Formidable";
 import Joi from "joi";
 import { NextApiHandler } from "next";
 
@@ -11,27 +13,16 @@ export const config = {
     api: { bodyParser: false },
 };   
 
-type bodyTypes = {
-    tags: string; 
-    title: string; 
-    content: string; 
-    slug: string; 
-    meta: string
-};
-
 const handler: NextApiHandler = async (req, res) => {
     const { method } = req;
     switch(method){
-        case 'GET': {
-            await dbConnect();
-            res.json({ok: true});
-        }
+        case 'GET': return readPosts(req, res);
         case 'POST': return createNewPost(req, res);
     }
 };
 
 const createNewPost: NextApiHandler = async (req, res) => {
-    const { files, body } = await readFile<bodyTypes>(req);
+    const { files, body } = await readFile<IncomingPost>(req);
 
     let tags = [];
     if(body.tags) tags = JSON.parse(body.tags as string);
@@ -69,5 +60,15 @@ const createNewPost: NextApiHandler = async (req, res) => {
 
     res.json({ post: newPost });
 };
+
+const readPosts: NextApiHandler = async (req, res) => {
+    try {
+        const { limit, pageNo } = req.query as { limit: string, pageNo: string };
+        const posts = await readPostsFromDb(parseInt(limit), parseInt(pageNo));
+        console.log(res.json({ posts: formatPosts(posts) }));   
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 export default handler;

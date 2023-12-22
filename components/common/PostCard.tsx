@@ -7,6 +7,7 @@ import Link from 'next/link';
 interface Props {
     post: PostDetail;
     busy?: boolean;
+    controls?: boolean;
     onDeleteClick?(): void;
 }
 
@@ -15,7 +16,11 @@ const trimText = (text: string, trimBy: number) => {
     return text.substring(0, trimBy).trim() + '...';
 }
 
-const PostCard: FC<Props> = ({ post, busy, onDeleteClick }): JSX.Element => {
+const PostCard: FC<Props> = ({ 
+    controls = false, 
+    post, busy, 
+    onDeleteClick 
+}): JSX.Element => {
     const { title, slug, meta, createdAt, tags, thumbnail } = post;
     return (
         <div className='rounded shadow-sm shadow-secondary-dark overflow-hidden bg-primary dark:bg-primary-dark transition flex-col h-full'>
@@ -50,14 +55,16 @@ const PostCard: FC<Props> = ({ post, busy, onDeleteClick }): JSX.Element => {
                     </a>
                 </Link>
 
-                <div className="flex justify-end items-center h-8 mt-auto space-x-4 text-primary-dark dark:text-primary">
-                    {busy ? <span className='animate-pusle'>Removing</span> : <>
-                        <Link legacyBehavior href={'/admin/posts/update/' + slug}>
-                            <a className='hover:underline'>Edit</a>
-                        </Link>
-                        <button onClick={onDeleteClick} className='hover:underline'>Delete</button>
-                    </>}
-                </div>
+                {controls && (
+                    <div className="flex justify-end items-center h-8 mt-auto space-x-4 text-primary-dark dark:text-primary">
+                        {busy ? <span className='animate-pusle'>Removing</span> : <>
+                            <Link legacyBehavior href={'/admin/posts/update/' + slug}>
+                                <a className='hover:underline'>Edit</a>
+                            </Link>
+                            <button onClick={onDeleteClick} className='hover:underline'>Delete</button>
+                        </>}
+                    </div>
+                )}
             </div>
         </div>
     );
