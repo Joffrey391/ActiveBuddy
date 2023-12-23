@@ -6,7 +6,7 @@ import {
     AiOutlineTeam,
     AiOutlineMail,
 } from "react-icons/ai";
-import Logo from './Logo';
+import Logo from '../Logo';
 import { IconType } from 'react-icons';
 import { RiMenuFoldFill, RiMenuUnfoldFill } from "react-icons/ri";
 

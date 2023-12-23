@@ -1,5 +1,5 @@
 import { Children, FC, ReactNode } from 'react';
-import AdminNav from '../common/AdminNav';
+import AdminNav from '../common/nav/AdminNav';
 import { AiOutlineContacts, AiOutlineContainer, AiOutlineDashboard, AiOutlineFileAdd, AiOutlineMail, AiOutlineTeam } from 'react-icons/ai';
 import Link from 'next/link';
 import AppHead from '../common/AppHead';

@@ -65,7 +65,7 @@ const readPosts: NextApiHandler = async (req, res) => {
     try {
         const { limit, pageNo } = req.query as { limit: string, pageNo: string };
         const posts = await readPostsFromDb(parseInt(limit), parseInt(pageNo));
-        console.log(res.json({ posts: formatPosts(posts) }));   
+        res.json({ posts: formatPosts(posts) });   
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
