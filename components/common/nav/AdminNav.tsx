@@ -10,6 +10,9 @@ import Logo from '../Logo';
 import { IconType } from 'react-icons';
 import { RiMenuFoldFill, RiMenuUnfoldFill } from "react-icons/ri";
 
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
+
 
 interface Props {
     navItems: {label: string, icon: IconType, href: string}[]
@@ -56,9 +59,6 @@ const AdminNav: FC<Props> = ({navItems}): JSX.Element => {
         }
     }, []);
 
-
-
-
     return (
         <nav ref={navRef} className='h-screen w-60 shadow-sm bg-secondary-light dark:bg-secondary-dark flex flex-col justify-between transition-width overflow-hidden sticky top-0'>
         <div>
@@ -73,12 +73,18 @@ const AdminNav: FC<Props> = ({navItems}): JSX.Element => {
 
             <div className='space-y-6'>
             {navItems.map(item => {
-                return <Link key={item.href} legacyBehavior href={item.href}>
-                <a className='flex items-center text-highlight-light dark:text-highlight-dark text-xl p-3 hover:scale-[0.98] transition'>
-                    <item.icon size={24} />
-                    {visible && <span className='ml-2 leading-none'>{item.label}</span>}
-                </a>
-                </Link>
+                return (
+                    <Tippy key={item.href} content={item.label}>
+                        <div>
+                            <Link key={item.href} legacyBehavior href={item.href}>
+                            <a className='flex items-center text-highlight-light dark:text-highlight-dark text-xl p-3 hover:scale-[0.98] transition'>
+                                <item.icon size={24} />
+                                {visible && <span className='ml-2 leading-none'>{item.label}</span>}
+                            </a>
+                            </Link>
+                        </div>
+                    </Tippy>
+                    )
             })}
             </div>
         </div>

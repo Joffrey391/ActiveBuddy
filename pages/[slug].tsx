@@ -22,7 +22,7 @@ const SinglePost: NextPage<Props> = ({ post }) => {
                 <span>{dateFormat(createdAt, 'd-mmm-yyyy')}</span>
             </div>
 
-            <div className="prose prose-lg max-w-full mx-auto">
+            <div className="prose prose-lg dark:prose-invert max-w-full mx-auto">
                 <h1>{title}</h1>
                 {parse(content)}
             </div>
