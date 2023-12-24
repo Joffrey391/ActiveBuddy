@@ -17,13 +17,16 @@ const SinglePost: NextPage<Props> = ({ post }) => {
                 <Image src={thumbnail} alt={title} layout='fill'/>
             </div> : null}
 
-            <div className="flex items-center justify-between py-2">
+            <h1 className='text-6xl font-semibold text-primary-dark dark:text-primary py-2'>
+                {title}
+            </h1>
+
+            <div className="flex items-center justify-between py-2 text-secondary-dark dark:text-secondary-light">
                 {tags.map((t,index) => <span key={t+ index}>#{t}</span>)}
                 <span>{dateFormat(createdAt, 'd-mmm-yyyy')}</span>
             </div>
 
             <div className="prose prose-lg dark:prose-invert max-w-full mx-auto">
-                <h1>{title}</h1>
                 {parse(content)}
             </div>
         </div>

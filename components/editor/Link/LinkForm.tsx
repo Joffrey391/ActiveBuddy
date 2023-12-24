@@ -60,7 +60,7 @@ const LinkForm: FC<Props> = ({
                     checked={link.openInNewTab}
                     onChange={({target}) => setLink({...link, openInNewTab: target.checked})}
                 />
-                <label htmlFor="checkbox">open in new tab</label>
+                <label className="text-secondary-dark dark:text-secondary-light" htmlFor="checkbox">open in new tab</label>
 
                 <div className="text-right flex-1">
                     <button onClick={handleSubmit} className="bg-action text-primary text-sm px-2 py-1 rounded">

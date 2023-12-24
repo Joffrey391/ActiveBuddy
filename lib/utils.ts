@@ -49,6 +49,7 @@ export const readPostsFromDb = async (limit: number, pageNo: number) => {
 
 export const formatPosts = (posts: PostModelSchema[]): PostDetail[] => {
     return posts.map((post) => ({
+        id: post._id.toString(),
         title: post.title,
         slug: post.slug,
         createdAt: post.createdAt.toString(),
