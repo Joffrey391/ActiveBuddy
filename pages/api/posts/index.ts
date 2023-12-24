@@ -1,19 +1,24 @@
 import cloudinary from "@/lib/cloudinary";
 import dbConnect from "@/lib/dbConnect";
-import { formatPosts, readFile, readPostsFromDb } from "@/lib/utils";
+import { formatPosts, isAdmin, readFile, readPostsFromDb } from "@/lib/utils";
 import { postValidationSchema, validateSchema } from "@/lib/validator";
 import Post from "@/models/Post";
-import { IncomingPost } from "@/utils/types";
+import { IncomingPost, UserProfile } from "@/utils/types";
 import formidable from "formidable";
 import IncomingForm from "formidable/Formidable";
 import Joi from "joi";
 import { NextApiHandler } from "next";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
 
 export const config = {
     api: { bodyParser: false },
 };   
 
 const handler: NextApiHandler = async (req, res) => {
+    const admin = await isAdmin(req, res);
+    if(!admin) return res.status(401).json({error: 'unauthorized request!'});
+
     const { method } = req;
     switch(method){
         case 'GET': return readPosts(req, res);

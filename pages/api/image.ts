@@ -1,6 +1,7 @@
 import { NextApiHandler } from "next";
 import formidable from 'formidable';
 import cloudinary from "@/lib/cloudinary";
+import { isAdmin } from "@/lib/utils";
 
 export const config = {
     api: { bodyParser: false },
@@ -19,7 +20,10 @@ const handler: NextApiHandler = (req, res) => {
     }
 };
 
-const uploadNewImage: NextApiHandler = (req, res) => {
+const uploadNewImage: NextApiHandler = async (req, res) => {
+    const admin = await isAdmin(req, res);
+    if(!admin) return res.status(401).json({error: 'unauthorized request!'});
+
     const form = formidable();
     form.parse(req, async (err, fields, files) => {
         if(err) return res.status(500).json({ error: err.message });
@@ -36,6 +40,9 @@ const uploadNewImage: NextApiHandler = (req, res) => {
 
 const readAllImages: NextApiHandler = async (req, res) => {
     try {
+        const admin = await isAdmin(req, res);
+        if(!admin) return res.status(401).json({error: 'unauthorized request!'});
+
         const { resources } = await cloudinary.api.resources({
             resource_type: 'image',
             type: 'upload',

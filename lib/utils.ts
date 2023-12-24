@@ -2,7 +2,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import dbConnect from "./dbConnect";
 import Post, { PostModelSchema } from "@/models/Post";
-import { PostDetail } from "@/utils/types";
+import { PostDetail, UserProfile } from "@/utils/types";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 interface FormidablePromise<T> {
     files: { [key: string]: formidable.File };
@@ -59,3 +61,8 @@ export const formatPosts = (posts: PostModelSchema[]): PostDetail[] => {
     }));
 };
 
+export const isAdmin = async (req: NextApiRequest, res: NextApiResponse) => {
+    const session = await getServerSession(req, res, authOptions);
+    const user = session?.user as UserProfile;
+    return user && user.role === 'admin';
+}
