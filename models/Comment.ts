@@ -34,10 +34,10 @@ const CommentSchema = new Schema<IComment>({
         type: Schema.Types.ObjectId,
         ref: 'Comment'
     }],
-    repliedTo: [{
+    repliedTo: {
         type: Schema.Types.ObjectId,
         ref: 'Comment'
-    }],
+    },
     chiefComment: {
         type: Boolean,
         default: false
