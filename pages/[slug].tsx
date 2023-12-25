@@ -84,8 +84,9 @@ export const getStaticProps: GetStaticProps<StaticPropsResponse, { slug: string 
                     tags,
                     thumbnail: thumbnail?.url || '',
                     createdAt: createdAt.toString(),
-                }
-            }
+                },
+            },
+            revalidate: 30
         } 
     } catch (error) {
         return { notFound: true };

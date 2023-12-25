@@ -11,12 +11,12 @@ import { useState } from 'react';
 
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>
 
-const Home: NextPage<Props> = ({posts}) => {
+const Home: NextPage<Props> = ({ posts }) => {
     const [postsToRender, setPostsToRender] = useState(posts);
     const [hasMorePosts, setHasMorePosts] = useState(posts.length >= limit);
 
-    const {data} = useSession();
-    const profile = data?.user as UserProfile;
+    const { data } = useSession();
+    const profile = (data?.user || {}) as UserProfile;
 
     const isAdmin = profile && profile.role === 'admin';
 
@@ -24,10 +24,10 @@ const Home: NextPage<Props> = ({posts}) => {
         try {
             pageNo++;
             const { data } = await axios(`/api/posts?limit=${limit}&skip=${postsToRender.length}`);
-            if(data.posts.length < limit){
+            if (data.posts.length < limit) {
                 setPostsToRender([...postsToRender, ...data.posts]);
                 setHasMorePosts(false);
-            } else setPostsToRender([...postsToRender, ...data.posts]);     
+            } else setPostsToRender([...postsToRender, ...data.posts]);
         } catch (error) {
             setHasMorePosts(false);
             console.log(error);
@@ -36,14 +36,14 @@ const Home: NextPage<Props> = ({posts}) => {
 
     return <DefaultLayout>
         <div className="pb-20">
-            <InfiniteScrollPost 
-                    hasMore={hasMorePosts} 
-                    next={fetchMorePosts} 
-                    dataLength={postsToRender.length} 
-                    posts={postsToRender} 
-                    showControls={isAdmin}
-                    onPostRemoved={(post) => setPostsToRender(filterPosts(postsToRender, post))}
-                />
+            <InfiniteScrollPost
+                hasMore={hasMorePosts}
+                next={fetchMorePosts}
+                dataLength={postsToRender.length}
+                posts={postsToRender}
+                showControls={isAdmin}
+                onPostRemoved={(post) => setPostsToRender(filterPosts(postsToRender, post))}
+            />
         </div>
     </DefaultLayout>
 };

@@ -28,7 +28,9 @@ const Gallery: FC<Props> = ({
                 <Image 
                     src={src} 
                     selected={ selectedImage === src } 
-                    onClick={() => onSelect(src)}/>
+                    onClick={() => onSelect(src)}
+                    alt='gallery'
+                />
             </div>
             );
         })}

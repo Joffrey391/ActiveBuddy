@@ -35,18 +35,18 @@ export const readFile = async <T extends object>(
 };
 
 export const readPostsFromDb = async (limit: number, pageNo: number, skip?: number) => {
-    if(!limit || limit > 10) 
+    if (!limit || limit > 10)
         throw Error('Please use limit under 10 and valid pageNo');
     const finalSkip = skip || limit * pageNo;
     await dbConnect();
     const posts = await Post.find()
-    .sort({ createdAt: 'desc' })
-    .select('-content')
-    .skip(finalSkip)
-    .limit(limit);
+        .sort({ createdAt: 'desc' })
+        .select('-content')
+        .skip(finalSkip)
+        .limit(limit);
 
     return posts;
-    
+
 };
 
 export const formatPosts = (posts: PostModelSchema[]): PostDetail[] => {
