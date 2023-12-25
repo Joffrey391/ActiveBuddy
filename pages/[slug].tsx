@@ -5,32 +5,47 @@ import parse from 'html-react-parser';
 import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType, NextPage } from 'next';
 import Image from 'next/image';
 import dateFormat from 'dateformat';
+import useAuth from '@/hooks/useAuth';
+import CommentForm from '@/components/common/CommentForm';
+import { GitHubAuthButton } from '@/components/button';
 
 type Props = InferGetStaticPropsType<typeof getStaticProps>
 
 const SinglePost: NextPage<Props> = ({ post }) => {
-    const {title, content, tags, meta, slug, thumbnail, createdAt} = post;
+    const userProfile = useAuth()
+    const { title, content, tags, meta, slug, thumbnail, createdAt } = post;
     return (
-    <DefaultLayout title={title} desc={meta}>
-        <div className="pb-20">
-            {thumbnail ? <div className="relative aspect-video">
-                <Image src={thumbnail} alt={title} layout='fill'/>
-            </div> : null}
+        <DefaultLayout title={title} desc={meta}>
+            <div>
+                {thumbnail ? <div className="relative aspect-video">
+                    <Image src={thumbnail} alt={title} layout='fill' />
+                </div> : null}
 
-            <h1 className='text-6xl font-semibold text-primary-dark dark:text-primary py-2'>
-                {title}
-            </h1>
+                <h1 className='text-6xl font-semibold text-primary-dark dark:text-primary py-2'>
+                    {title}
+                </h1>
 
-            <div className="flex items-center justify-between py-2 text-secondary-dark dark:text-secondary-light">
-                {tags.map((t,index) => <span key={t+ index}>#{t}</span>)}
-                <span>{dateFormat(createdAt, 'd-mmm-yyyy')}</span>
+                <div className="flex items-center justify-between py-2 text-secondary-dark dark:text-secondary-light">
+                    {tags.map((t, index) => <span key={t + index}>#{t}</span>)}
+                    <span>{dateFormat(createdAt, 'd-mmm-yyyy')}</span>
+                </div>
+
+                <div className="prose prose-lg dark:prose-invert max-w-full mx-auto">
+                    {parse(content)}
+                </div>
+
+                <div className="py-20">
+                    {userProfile ? (
+                        <CommentForm title='Add comment'/>
+                    ) : (
+                        <div className='flex flex-col items-end space-y-2'>
+                            <h3 className='text-secondary-dark text-xl font-semibold'>Log in to add comment</h3>
+                            <GitHubAuthButton />
+                        </div>
+                    )}
+                </div>
             </div>
-
-            <div className="prose prose-lg dark:prose-invert max-w-full mx-auto">
-                {parse(content)}
-            </div>
-        </div>
-    </DefaultLayout>
+        </DefaultLayout>
     );
 };
 
@@ -87,7 +102,7 @@ export const getStaticProps: GetStaticProps<StaticPropsResponse, { slug: string 
                 },
             },
             revalidate: 30
-        } 
+        }
     } catch (error) {
         return { notFound: true };
     }
