@@ -12,6 +12,7 @@ const handler: NextApiHandler = (req, res) => {
     switch(method){
         case 'POST': return createNewComment(req, res)
         case 'DELETE': return removeComment(req, res)
+        case 'PATCH': return updateComment(req, res)
 
         default: res.status(404).send('Not found!')
     }
@@ -40,6 +41,7 @@ const createNewComment: NextApiHandler = async (req, res) => {
     res.status(201).json(comment)
 
 }
+
 const removeComment: NextApiHandler = async (req, res) => {
     const user = await isAuth(req, res)
     if(!user) return res.status(403).json({error: 'Unauthorized request!'});
@@ -61,6 +63,27 @@ const removeComment: NextApiHandler = async (req, res) => {
     }
     await Comment.findByIdAndDelete(commentId);
     res.json({removed: true})
+
+}
+
+const updateComment: NextApiHandler = async (req, res) => {
+    const user = await isAuth(req, res)
+    if(!user) return res.status(403).json({error: 'Unauthorized request!'});
+
+    const error = validateSchema(commentValidationSchema, req.body)
+    if(error) return res.status(422).json({error})
+
+    const {commentId} = req.query
+    if(!commentId || !isValidObjectId(commentId)) return res.status(422).json({error: 'Invalid request!'})
+
+    const comment = await Comment.findOne({_id: commentId, owner: user.id})
+    if(!comment) return res.status(404).json({error: 'Comment not found!'})
+
+    comment.content = req.body.content
+    await comment.save()
+
+    res.json(comment)
+    
 
 }
 
