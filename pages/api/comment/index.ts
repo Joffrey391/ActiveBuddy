@@ -3,6 +3,7 @@ import { isAuth } from "@/lib/utils";
 import { commentValidationSchema, validateSchema } from "@/lib/validator";
 import Comment from "@/models/Comment";
 import Post from "@/models/Post";
+import { isValidObjectId } from "mongoose";
 import { NextApiHandler } from "next";
 
 const handler: NextApiHandler = (req, res) => {
@@ -10,6 +11,7 @@ const handler: NextApiHandler = (req, res) => {
 
     switch(method){
         case 'POST': return createNewComment(req, res)
+        case 'DELETE': return removeComment(req, res)
 
         default: res.status(404).send('Not found!')
     }
@@ -36,6 +38,29 @@ const createNewComment: NextApiHandler = async (req, res) => {
 
     await comment.save()
     res.status(201).json(comment)
+
+}
+const removeComment: NextApiHandler = async (req, res) => {
+    const user = await isAuth(req, res)
+    if(!user) return res.status(403).json({error: 'Unauthorized request!'});
+
+    const {commentId} = req.query
+    if(!commentId || !isValidObjectId(commentId)) return res.status(422).json({error: 'Invalid request!'})
+
+    const comment = await Comment.findOne({_id: commentId, owner: user.id})
+    if(!comment) return res.status(404).json({error: 'Comment not found!'})
+
+    if(comment.chiefComment) {
+        await Comment.deleteMany({repliedTo: commentId})
+    } else {
+        const chiefComment = await Comment.findById(comment.repliedTo)
+        if(chiefComment?.replies?.includes(commentId as any)){
+            chiefComment.replies = chiefComment.replies.filter((cId) => cId.toString() !== commentId)
+            await chiefComment.save()
+        }
+    }
+    await Comment.findByIdAndDelete(commentId);
+    res.json({removed: true})
 
 }
 
