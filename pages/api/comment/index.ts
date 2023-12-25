@@ -3,6 +3,7 @@ import { formatComment, isAuth } from "@/lib/utils";
 import { commentValidationSchema, validateSchema } from "@/lib/validator";
 import Comment from "@/models/Comment";
 import Post from "@/models/Post";
+import { CommentResponse } from "@/utils/types";
 import { isValidObjectId } from "mongoose";
 import { NextApiHandler } from "next";
 
@@ -25,7 +26,7 @@ const readComments: NextApiHandler = async (req, res) => {
     const { belongsTo } = req.query
     if (!belongsTo || !isValidObjectId(belongsTo)) return res.status(422).json({ error: 'Invalid request!' })
 
-    const comment = await Comment.findOne({ belongsTo })
+    const comments = await Comment.find({ belongsTo })
         .populate({
             path: 'owner',
             select: 'name avatar',
@@ -36,13 +37,13 @@ const readComments: NextApiHandler = async (req, res) => {
                 path: 'owner',
                 select: 'name avatar',
             }
-        }). select('createdAt likes content repliedTo')
-        if(!comment) return res.json({comment})
-        const formattedComment = {...formatComment(comment, user), replies: comment.replies?.map((c: any) => formatComment(c, user))}
-        res.json({comment: formattedComment})
-    
-
-
+        }).select('createdAt likes content repliedTo')
+    if (!comments) return res.json({ comment: comments });
+    const formattedComment: CommentResponse[] = comments.map((comment) => ({
+            ...formatComment(comment, user), 
+            replies: comment.replies?.map((c: any) => formatComment(c, user)),
+    }));
+    res.json({ comments: formattedComment })
 }
 
 const createNewComment: NextApiHandler = async (req, res) => {
@@ -65,7 +66,8 @@ const createNewComment: NextApiHandler = async (req, res) => {
     })
 
     await comment.save()
-    res.status(201).json(comment)
+    const commentWithOwner = await comment.populate('owner')
+    res.status(201).json({ comment: formatComment(commentWithOwner, user) })
 
 }
 

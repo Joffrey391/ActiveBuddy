@@ -79,13 +79,14 @@ const getLikedByOwner = (likes: any[], user: UserProfile) => likes.includes(user
 
 
 export const formatComment = (comment: IComment, user?: UserProfile): CommentResponse => {
+    const owner = comment.owner as any
     return {
         id: comment._id.toString(),
         content: comment.content,
         likes: comment.likes.length,
         chiefComment: comment?.chiefComment || false,
         createdAt: comment.createdAt?.toString(),
-        owner: user? {id: user.id, name: user.name, avatar: user.avatar} : null,
+        owner:{id: owner._id, name: owner.name, avatar: owner.avatar},
         repliedTo: comment?.repliedTo?.toString(),
         likedByOwner: user ? getLikedByOwner(comment.likes, user) : false
     }
