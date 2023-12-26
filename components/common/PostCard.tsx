@@ -3,17 +3,13 @@ import Image from 'next/image';
 import { FC } from 'react';
 import dateformat from 'dateformat';
 import Link from 'next/link';
+import { trimText } from '@/utils/helper';
 
 interface Props {
     post: PostDetail;
     busy?: boolean;
     controls?: boolean;
     onDeleteClick?(): void;
-}
-
-const trimText = (text: string, trimBy: number) => {
-    if (text.length <= trimBy) return text;
-    return text.substring(0, trimBy).trim() + '...';
 }
 
 const PostCard: FC<Props> = ({ 
