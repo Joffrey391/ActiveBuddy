@@ -11,13 +11,15 @@ interface Props {
     showControls?: boolean
     onUpdateSubmit?(content: string): void
     onReplySubmit?(content: string): void
+    onDeleteClick?(): void
 }
 
 const CommentCard: FC<Props> = ({ 
     comment, 
     onUpdateSubmit, 
     onReplySubmit, 
-    showControls = false
+    showControls = false,
+    onDeleteClick
 }): JSX.Element => {
     const { owner, content, createdAt } = comment
     const { name, avatar } = owner
@@ -74,7 +76,7 @@ const CommentCard: FC<Props> = ({
                             <BsPencilSquare />
                             <span>Edit</span>
                         </Button>
-                        <Button>
+                        <Button onClick={onDeleteClick}>
                             <BsFillTrashFill />
                             <span>Delete</span>
                         </Button>

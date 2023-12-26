@@ -5,6 +5,7 @@ import useAuth from '@/hooks/useAuth';
 import axios from 'axios';
 import { CommentResponse } from '@/utils/types';
 import CommentCard from './CommentCard';
+import ConfirmModal from './ConfirmModal';
 
 interface Props {
     belongsTo: string;
@@ -12,6 +13,8 @@ interface Props {
 
 const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
     const [comments, setComments] = useState<CommentResponse[]>()
+    const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [commentToDelete, setCommentToDelete] = useState<CommentResponse | null>(null)
     const userProfile = useAuth()
 
     const insertNewReplyComments = (reply: CommentResponse) => {
@@ -30,7 +33,42 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
         setComments([...updatedComments])
     }
 
-    const handleNewCommonSubmit = async (content: string) => {
+    const updateEditedComment = (newComment: CommentResponse) => {
+        if (!comments) return
+
+        let updatedComments = [...comments]
+
+
+        if (newComment.chiefComment) {
+            const index = updatedComments.findIndex(({ id }) => id === newComment.id)
+            updatedComments[index].content = newComment.content
+        } else {
+            const chiefCommentIndex = updatedComments.findIndex(({ id }) => id === newComment.repliedTo)
+            let newReplies = updatedComments[chiefCommentIndex].replies
+            newReplies = newReplies?.map((comment) => {
+                if (comment.id === newComment.id) comment.content = newComment.content
+                return comment
+            })
+            updatedComments[chiefCommentIndex].replies = newReplies
+        }
+        setComments([...updatedComments])
+    }
+
+    const updateDeletedComments = (deletedComment: CommentResponse) => {
+        if (!comments) return
+        let newComments = [...comments]
+
+        if (deletedComment.chiefComment) {
+            newComments = newComments.filter(({ id }) => id !== deletedComment.id)
+        } else {
+            const chiefCommentIndex = newComments.findIndex(({ id }) => id === deletedComment.repliedTo)
+            const newReplies = newComments[chiefCommentIndex].replies?.filter(({ id }) => id !== deletedComment.id)
+            newComments[chiefCommentIndex].replies = newReplies
+        }
+        setComments([...newComments])
+    }
+
+    const handleNewCommentSubmit = async (content: string) => {
         const newComment = await axios
             .post('/api/comment', { content, belongsTo })
             .then(({ data }) => data.comment)
@@ -46,6 +84,37 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
             .catch(err => console.log(err))
     }
 
+    const handleUpdateSubmit = (content: string, id: string) => {
+        axios
+            .patch(`/api/comment?commentId=${id}`, { content })
+            .then(({ data }) => updateEditedComment(data.comment))
+            .catch(err => console.log(err))
+    }
+
+    const handleOnDeleteClick = (comment: CommentResponse) => {
+        setCommentToDelete(comment);
+        setShowConfirmModal(true);
+    }
+
+    const handleOnDeleteCancel = () => {
+        setCommentToDelete(null);
+        setShowConfirmModal(false);
+    }
+
+    const handleOnDeleteConfirm = () => {
+        if (!commentToDelete) return
+        axios
+            .delete(`/api/comment?commentId=${commentToDelete.id}`)
+            .then(({ data }) => {
+                if (data.removed) updateDeletedComments(commentToDelete)
+            })
+            .catch((err) => console.log(err))
+            .finally(() => {
+                setCommentToDelete(null)
+                setShowConfirmModal(false)
+            })
+    }
+
     useEffect(() => {
         axios(`/api/comment?belongsTo=${belongsTo}`)
             .then(({ data }) => {
@@ -56,7 +125,7 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
     return (
         <div className="py-20 space-y-4">
             {userProfile ? (
-                <CommentForm onSubmit={handleNewCommonSubmit} title='Add comment' />
+                <CommentForm onSubmit={handleNewCommentSubmit} title='Add comment' />
             ) : (
                 <div className='flex flex-col items-end space-y-2'>
                     <h3 className='text-secondary-dark text-xl font-semibold'>Log in to add comment</h3>
@@ -71,11 +140,9 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
                         <CommentCard
                             comment={comment}
                             showControls={userProfile?.id === comment.owner.id}
-                            onReplySubmit={(content) =>
-                                handleReplySubmit({ content, repliedTo: comment.id })}
-                            onUpdateSubmit={(content) => {
-                                console.log('update:', content)
-                            }}
+                            onReplySubmit={(content) => handleReplySubmit({ content, repliedTo: comment.id })}
+                            onUpdateSubmit={(content) => handleUpdateSubmit(content, comment.id)}
+                            onDeleteClick={() => handleOnDeleteClick(comment)}
                         />
 
                         {replies?.length ? <div className='w-[93%] ml-auto space-y-3'>
@@ -87,7 +154,8 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
                                         comment={reply}
                                         showControls={userProfile?.id === reply.owner.id}
                                         onReplySubmit={(content) => handleReplySubmit({ content, repliedTo: comment.id })}
-                                        onUpdateSubmit={(content) => { console.log('update:', content) }}
+                                        onUpdateSubmit={(content) => handleUpdateSubmit(content, reply.id)}
+                                        onDeleteClick={() => handleOnDeleteClick(reply)}
                                     />
                                 );
                             })}
@@ -98,6 +166,14 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
                     </div>
                 );
             })}
+
+            <ConfirmModal
+                visible={showConfirmModal}
+                title='Are you sure?'
+                subTitle='This action will remove this comment and replies if this is chief comment!'
+                onCancel={handleOnDeleteCancel}
+                onConfirm={handleOnDeleteConfirm}
+            />
         </div>
 
     )

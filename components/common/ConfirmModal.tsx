@@ -25,7 +25,7 @@ const ConfirmModal: FC<Props> = ({
     return (
         <ModalContainer visible={visible} onClose={onClose}>
             <div className='bg-primary-dark dark:bg-primary p-3'>
-                <p className='dark:text-primary-dark text-primary font-semibold text-lg'>{title}</p>
+                <p className='dark:text-primary-dark text-primary font-semibold text-lg max-w-[380px]'>{title}</p>
                 <p className='dark:text-primary-dark text-primary'>{subTitle}</p>
                 {busy && (
                     <p className='flex items-center space-x-2 dark:text-primary-dark text-primary pt-2'>
