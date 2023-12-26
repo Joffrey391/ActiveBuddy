@@ -5,6 +5,7 @@ import parse from 'html-react-parser';
 import { BsFillReplyAllFill, BsFillTrashFill, BsPencilSquare } from 'react-icons/bs';
 import CommentForm from './CommentForm';
 import { CommentResponse } from '@/utils/types';
+import LikeHeart from './LikeHeart';
 
 interface Props {
     comment: CommentResponse
@@ -12,6 +13,7 @@ interface Props {
     onUpdateSubmit?(content: string): void
     onReplySubmit?(content: string): void
     onDeleteClick?(): void
+    onLikeClick?(): void
 }
 
 const CommentCard: FC<Props> = ({ 
@@ -19,9 +21,10 @@ const CommentCard: FC<Props> = ({
     onUpdateSubmit, 
     onReplySubmit, 
     showControls = false,
-    onDeleteClick
+    onDeleteClick,
+    onLikeClick,
 }): JSX.Element => {
-    const { owner, content, createdAt } = comment
+    const { owner, content, createdAt, likedByOwner, likes } = comment
     const { name, avatar } = owner
     const [showForm, setShowForm] = useState(false);
     const [initialState, setInitialState] = useState('');
@@ -67,6 +70,7 @@ const CommentCard: FC<Props> = ({
                     {parse(content)}
                 </div>
                 <div className="flex space-x-4">
+                    <LikeHeart liked={likedByOwner} label={likes + ' likes'} onClick={onLikeClick} />
                     <Button onClick={handleOnReplyClick}>
                         <BsFillReplyAllFill />
                         <span>Reply</span>
