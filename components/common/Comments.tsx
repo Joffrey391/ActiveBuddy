@@ -8,10 +8,14 @@ import CommentCard from './CommentCard';
 import ConfirmModal from './ConfirmModal';
 
 interface Props {
-    belongsTo: string;
+    belongsTo?: string;
+    fetchAll?: boolean
 }
 
-const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
+const limit = 5;
+let currentPageNo = 0
+
+const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
     const [comments, setComments] = useState<CommentResponse[]>()
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [commentToDelete, setCommentToDelete] = useState<CommentResponse | null>(null)
@@ -142,17 +146,33 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
             .catch((err) => console.log(err))
     }
 
+    const fetchAllComments = async (pageNo = currentPageNo) => {
+        try {
+            const {data} = await axios(`/api/comment/all?pageNo=${pageNo}&limit=${limit}`)
+            setComments(data.comments)   
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     useEffect(() => {
+        if(!belongsTo) return
         axios(`/api/comment?belongsTo=${belongsTo}`)
             .then(({ data }) => {
                 setComments(data.comments)
             }).catch((err) => console.log(err))
     }, [belongsTo]);
 
+    useEffect(() => {
+        if(!belongsTo && fetchAll){
+            fetchAllComments()
+        }
+    }, [belongsTo, fetchAll]);
+
     return (
         <div className="py-20 space-y-4">
             {userProfile ? (
-                <CommentForm onSubmit={handleNewCommentSubmit} title='Add comment' />
+                <CommentForm visible={!fetchAll} onSubmit={handleNewCommentSubmit} title='Add comment' />
             ) : (
                 <div className='flex flex-col items-end space-y-2'>
                     <h3 className='text-secondary-dark text-xl font-semibold'>Log in to add comment</h3>
