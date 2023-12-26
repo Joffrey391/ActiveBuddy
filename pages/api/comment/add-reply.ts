@@ -1,5 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
-import { isAuth } from "@/lib/utils";
+import { formatComment, isAuth } from "@/lib/utils";
 import { commentValidationSchema, validateSchema } from "@/lib/validator";
 import Comment from "@/models/Comment";
 import { isValidObjectId } from "mongoose";
@@ -44,7 +44,9 @@ const addReplyToComment: NextApiHandler = async (req, res) => {
     await chiefComment.save()
     await replyComment.save()
 
-    res.status(201).json({ comment: replyComment })
+    const finalComment = await replyComment.populate('owner')
+
+    res.status(201).json({ comment: formatComment(finalComment, user) })
 }
 
 export default handler;

@@ -1,44 +1,113 @@
-import { FC } from 'react';
+import { FC, ReactNode, useState } from 'react';
 import ProfileIcon from './ProfileIcon';
 import dateFormat from 'dateformat';
 import parse from 'html-react-parser';
-import { BsFillReplyAllFill } from 'react-icons/bs';
-
-interface CommentOwnersProfile {
-    name: string;
-    avatar?: string;
-}
+import { BsFillReplyAllFill, BsFillTrashFill, BsPencilSquare } from 'react-icons/bs';
+import CommentForm from './CommentForm';
+import { CommentResponse } from '@/utils/types';
 
 interface Props {
-    profile: CommentOwnersProfile;
-    date: string,
-    content: string,
+    comment: CommentResponse
+    showControls?: boolean
+    onUpdateSubmit?(content: string): void
+    onReplySubmit?(content: string): void
 }
 
-const CommentCard: FC<Props> = ({profile, date, content}): JSX.Element => {
-    const {name, avatar} = profile
+const CommentCard: FC<Props> = ({ 
+    comment, 
+    onUpdateSubmit, 
+    onReplySubmit, 
+    showControls = false
+}): JSX.Element => {
+    const { owner, content, createdAt } = comment
+    const { name, avatar } = owner
+    const [showForm, setShowForm] = useState(false);
+    const [initialState, setInitialState] = useState('');
+
+    const hideReplyForm = () => {
+        setShowForm(false)
+    }
+
+    const displayReplyForm = () => {
+        setInitialState('')
+        setShowForm(true)
+    }
+
+    const handleOnReplyClick = () => {
+        displayReplyForm()
+    }
+
+    const handleOnEditClick = () => {
+        displayReplyForm()
+        setInitialState(content)
+    }
+
+    const handleCommentSubmit = (comment: string) => {
+        if (initialState) {
+            onUpdateSubmit && onUpdateSubmit(comment)
+        } else {
+            onReplySubmit && onReplySubmit(comment)
+        }
+        hideReplyForm()
+    }
+
     return (
         <div className='flex space-x-3'>
-            <ProfileIcon nameInitial={name[0].toUpperCase()} avatar={avatar}/>
+            <ProfileIcon nameInitial={name[0].toUpperCase()} avatar={avatar} />
             <div className="flex-1">
                 <h1 className='text-lg text-primary-dark dark:text-primary font-semibold'>
                     {name}
                 </h1>
                 <span className='text-sm text-secondary-dark'>
-                    {dateFormat(date, 'd-mmm-yyyy')}
+                    {dateFormat(createdAt, 'd-mmm-yyyy')}
                 </span>
-                <p className='text-primary-dark dark:text-primary'>
+                <div className='text-primary-dark dark:text-primary'>
                     {parse(content)}
-                </p>
-                <div className="flex">
-                    <button className='flex items-center text-primary-dark dark:text-primary space-x-2'>
+                </div>
+                <div className="flex space-x-4">
+                    <Button onClick={handleOnReplyClick}>
                         <BsFillReplyAllFill />
                         <span>Reply</span>
-                    </button>
+                    </Button>
+                    {showControls && <>
+                        <Button onClick={handleOnEditClick}>
+                            <BsPencilSquare />
+                            <span>Edit</span>
+                        </Button>
+                        <Button>
+                            <BsFillTrashFill />
+                            <span>Delete</span>
+                        </Button>
+
+                    </>}
                 </div>
+                {showForm && (
+                    <div className='mt-3'>
+                        <CommentForm
+                            onSubmit={handleCommentSubmit}
+                            onClose={hideReplyForm}
+                            initialState={initialState}
+                        />
+                    </div>)}
             </div>
         </div>
     );
 };
 
 export default CommentCard;
+
+interface ButtonProps {
+    children: ReactNode;
+    onClick?(): void;
+}
+
+const Button: FC<ButtonProps> = ({ children, onClick }) => {
+    return (
+        <button
+            onClick={onClick}
+            className='flex items-center text-primary-dark dark:text-primary space-x-2'
+        >
+            {children}
+        </button>
+    );
+}

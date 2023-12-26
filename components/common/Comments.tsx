@@ -10,24 +10,47 @@ interface Props {
     belongsTo: string;
 }
 
-const Comments: FC<Props> = ({belongsTo}): JSX.Element => {
+const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
     const [comments, setComments] = useState<CommentResponse[]>()
     const userProfile = useAuth()
 
+    const insertNewReplyComments = (reply: CommentResponse) => {
+        if (!comments) return
+        let updatedComments = [...comments]
+
+        const chiefCommentIndex = updatedComments.findIndex(({ id }) => id === reply.repliedTo)
+
+        const { replies } = updatedComments[chiefCommentIndex]
+        if (replies) {
+            updatedComments[chiefCommentIndex].replies = [...replies, reply]
+        } else {
+            updatedComments[chiefCommentIndex].replies = [reply]
+        }
+
+        setComments([...updatedComments])
+    }
+
     const handleNewCommonSubmit = async (content: string) => {
         const newComment = await axios
-            .post('/api/comment', {content, belongsTo})
-            .then(({data}) => data.comment)
+            .post('/api/comment', { content, belongsTo })
+            .then(({ data }) => data.comment)
             .catch((err) => console.log(err));
-        if(newComment && comments) setComments([...comments, newComment])
+        if (newComment && comments) setComments([...comments, newComment])
         else setComments([newComment])
+    }
+
+    const handleReplySubmit = (replyComment: { content: string; repliedTo: string }) => {
+        axios
+            .post('/api/comment/add-reply', replyComment)
+            .then(({ data }) => insertNewReplyComments(data.comment))
+            .catch(err => console.log(err))
     }
 
     useEffect(() => {
         axios(`/api/comment?belongsTo=${belongsTo}`)
-        .then(({data}) => {
-            setComments(data.comments)
-        }).catch((err) => console.log(err))
+            .then(({ data }) => {
+                setComments(data.comments)
+            }).catch((err) => console.log(err))
     }, []);
 
     return (
@@ -41,12 +64,39 @@ const Comments: FC<Props> = ({belongsTo}): JSX.Element => {
                 </div>
             )}
 
-            {comments?.map(({id, owner, createdAt, content}) => {
+            {comments?.map((comment) => {
+                const { replies } = comment
                 return (
-                <div key={id}>
-                    <CommentCard profile={owner} date={createdAt} content={content}/>   
-                </div> 
-                );      
+                    <div key={comment.id}>
+                        <CommentCard
+                            comment={comment}
+                            showControls={userProfile?.id === comment.owner.id}
+                            onReplySubmit={(content) =>
+                                handleReplySubmit({ content, repliedTo: comment.id })}
+                            onUpdateSubmit={(content) => {
+                                console.log('update:', content)
+                            }}
+                        />
+
+                        {replies?.length ? <div className='w-[93%] ml-auto space-y-3'>
+                            <h1 className='text-secondary-dark mb-3'>Replies</h1>
+                            {replies.map((reply) => {
+                                return (
+                                    <CommentCard
+                                        key={reply.id}
+                                        comment={reply}
+                                        showControls={userProfile?.id === reply.owner.id}
+                                        onReplySubmit={(content) => handleReplySubmit({ content, repliedTo: comment.id })}
+                                        onUpdateSubmit={(content) => { console.log('update:', content) }}
+                                    />
+                                );
+                            })}
+
+
+                        </div> : null}
+
+                    </div>
+                );
             })}
         </div>
 
