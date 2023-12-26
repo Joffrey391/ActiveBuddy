@@ -147,7 +147,7 @@ const Comments: FC<Props> = ({ belongsTo }): JSX.Element => {
             .then(({ data }) => {
                 setComments(data.comments)
             }).catch((err) => console.log(err))
-    }, []);
+    }, [belongsTo]);
 
     return (
         <div className="py-20 space-y-4">
