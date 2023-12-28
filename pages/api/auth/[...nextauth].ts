@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
                     avatar: user.avatar,
                     role: user.role,
             } as any;
-            console.log(session)
+            //console.log(session)
             return session;
         },
     },

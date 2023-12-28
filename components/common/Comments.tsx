@@ -20,6 +20,9 @@ const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
     const [comments, setComments] = useState<CommentResponse[]>()
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [reachedToEnd, setReachedToEnd] = useState(false)
+    const [busyCommentLike, setBusyCommentLike] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
+    const [selectedComment, setSelectedComment] = useState<CommentResponse | null>(null)
     const [commentToDelete, setCommentToDelete] = useState<CommentResponse | null>(null)
     const userProfile = useAuth()
 
@@ -95,12 +98,18 @@ const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
     }
 
     const handleNewCommentSubmit = async (content: string) => {
-        const newComment = await axios
-            .post('/api/comment', { content, belongsTo })
-            .then(({ data }) => data.comment)
-            .catch((err) => console.log(err));
-        if (newComment && comments) setComments([...comments, newComment])
-        else setComments([newComment])
+        setSubmitting(true)
+        try {
+            const newComment = await axios
+                .post('/api/comment', { content, belongsTo })
+                .then(({ data }) => data.comment)
+                .catch((err) => console.log(err));
+            if (newComment && comments) setComments([...comments, newComment])
+            else setComments([newComment])     
+        } catch (error) {
+            console.log(error)
+        }
+        setSubmitting(false)
     }
 
     const handleReplySubmit = (replyComment: { content: string; repliedTo: string }) => {
@@ -142,10 +151,20 @@ const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
     }
 
     const handleOnLikeClick = (comment: CommentResponse) => {
+        setBusyCommentLike(true)
+        setSelectedComment(comment)
         axios
             .post('/api/comment/update-like', {commentId: comment.id})
-            .then(({data}) => updateLikedComments(data.comment))
-            .catch((err) => console.log(err))
+            .then(({data}) => {
+                updateLikedComments(data.comment)
+                setBusyCommentLike(false)
+                setSelectedComment(null)
+            })
+            .catch((err) => {
+                console.log(err)
+                setBusyCommentLike(false)
+                setSelectedComment(null)
+            })
     }
 
     const fetchAllComments = async (pageNo = currentPageNo) => {
@@ -193,7 +212,7 @@ const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
     return (
         <div className="py-20 space-y-4">
             {userProfile ? (
-                <CommentForm visible={!fetchAll} onSubmit={handleNewCommentSubmit} title='Add comment' />
+                <CommentForm visible={!fetchAll} onSubmit={handleNewCommentSubmit} title='Add comment' busy={submitting} />
             ) : (
                 <div className='flex flex-col items-end space-y-2'>
                     <h3 className='text-secondary-dark text-xl font-semibold'>Log in to add comment</h3>
@@ -212,6 +231,7 @@ const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
                             onUpdateSubmit={(content) => handleUpdateSubmit(content, comment.id)}
                             onDeleteClick={() => handleOnDeleteClick(comment)}
                             onLikeClick={() => handleOnLikeClick(comment)}
+                            busy={selectedComment?.id === comment.id && busyCommentLike}
                         />
 
                         {replies?.length ? <div className='w-[93%] ml-auto space-y-3'>
@@ -226,6 +246,7 @@ const Comments: FC<Props> = ({ belongsTo, fetchAll }): JSX.Element => {
                                         onUpdateSubmit={(content) => handleUpdateSubmit(content, reply.id)}
                                         onDeleteClick={() => handleOnDeleteClick(reply)}
                                         onLikeClick={() => handleOnLikeClick(reply)}
+                                        busy={selectedComment?.id === reply.id && busyCommentLike}
                                     />
                                 );
                             })}

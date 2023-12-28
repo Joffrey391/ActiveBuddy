@@ -12,13 +12,15 @@ import { boolean } from 'joi';
 import useAuth from '@/hooks/useAuth';
 import { signIn } from 'next-auth/react';
 import axios from 'axios';
+import User from '@/models/User';
+import AuthorInfo from '@/components/common/AuthorInfo';
 
 type Props = InferGetStaticPropsType<typeof getStaticProps>
 
 const SinglePost: NextPage<Props> = ({ post }) => {
     const [likes, setLikes] = useState({likedByOwner: false, count: 0})
     const [liking, setLiking] = useState(false)
-    const { id, title, content, tags, meta, slug, thumbnail, createdAt } = post;
+    const { id, title, content, tags, meta, slug, author, thumbnail, createdAt } = post;
 
     const user = useAuth()
 
@@ -39,7 +41,6 @@ const SinglePost: NextPage<Props> = ({ post }) => {
             if(!user) return await signIn('github')
             const {data} = await axios.post(`/api/posts/update-like?postId=${id}`)
             setLikes({ likedByOwner: !likes.likedByOwner, count: data.newLikes })
-            console.log(likes)
         } catch (error) {
             console.log(error)
         }
@@ -55,7 +56,7 @@ const SinglePost: NextPage<Props> = ({ post }) => {
 
     return (
         <DefaultLayout title={title} desc={meta}>
-            <div>
+            <div className='lg:px-0 px-3'>
                 {thumbnail ? <div className="relative aspect-video">
                     <Image src={thumbnail} alt={title} layout='fill' />
                 </div> : null}
@@ -80,6 +81,9 @@ const SinglePost: NextPage<Props> = ({ post }) => {
                         onClick={!liking ? handleOnLikeClick : undefined}
                         busy={liking}
                         />
+                </div>
+                <div className="pt-10">
+                    <AuthorInfo profile={JSON.parse(author)} />
                 </div>
                 <Comments belongsTo={id}/>
             </div>
@@ -117,15 +121,27 @@ interface StaticPropsResponse {
         slug: string;
         thumbnail: string,
         createdAt: string,
+        author: string
     }
 }
 
 export const getStaticProps: GetStaticProps<StaticPropsResponse, { slug: string }> = async ({ params }) => {
     try {
         await dbConnect()
-        const post = await Post.findOne({ slug: params?.slug });
+        const post = await Post.findOne({ slug: params?.slug }).populate('author');
         if (!post) return { notFound: true };
-        const { _id, title, content, meta, slug, tags, thumbnail, createdAt } = post;
+        const { _id, title, content, meta, slug, tags, thumbnail, createdAt, author } = post;
+
+        const admin = await User.findOne({role: 'admin'})
+        const authorInfo = (author || admin) as any
+
+        const postAuthor = {
+            id: authorInfo._id,
+            name: authorInfo.name,
+            avatar: authorInfo.avatar,
+            message: `This post is written by ${authorInfo.name}. ${authorInfo.name.split(' ')[0]} is a professional trainer on Computer Science Faculty`
+        }
+
         return {
             props: {
                 post: {
@@ -137,6 +153,7 @@ export const getStaticProps: GetStaticProps<StaticPropsResponse, { slug: string 
                     tags,
                     thumbnail: thumbnail?.url || '',
                     createdAt: createdAt.toString(),
+                    author: JSON.stringify(postAuthor),
                 },
             },
             revalidate: 30

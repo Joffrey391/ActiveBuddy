@@ -10,6 +10,7 @@ import LikeHeart from './LikeHeart';
 interface Props {
     comment: CommentResponse
     showControls?: boolean
+    busy: boolean
     onUpdateSubmit?(content: string): void
     onReplySubmit?(content: string): void
     onDeleteClick?(): void
@@ -23,6 +24,7 @@ const CommentCard: FC<Props> = ({
     showControls = false,
     onDeleteClick,
     onLikeClick,
+    busy,
 }): JSX.Element => {
     const { owner, content, createdAt, likedByOwner, likes } = comment
     const { name, avatar } = owner
@@ -70,7 +72,7 @@ const CommentCard: FC<Props> = ({
                     {parse(content)}
                 </div>
                 <div className="flex space-x-4">
-                    <LikeHeart liked={likedByOwner} label={likes + ' likes'} onClick={onLikeClick} />
+                    <LikeHeart liked={likedByOwner} label={likes + ' likes'} onClick={onLikeClick} busy={busy} />
                     <Button onClick={handleOnReplyClick}>
                         <BsFillReplyAllFill />
                         <span>Reply</span>
