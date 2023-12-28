@@ -15,6 +15,7 @@ import axios from 'axios';
 import User from '@/models/User';
 import AuthorInfo from '@/components/common/AuthorInfo';
 import Share from '@/components/common/Share';
+import Link from 'next/link';
 
 type Props = InferGetStaticPropsType<typeof getStaticProps>
 
@@ -23,8 +24,9 @@ const host = 'http://localhost:3000'
 const SinglePost: NextPage<Props> = ({ post }) => {
     const [likes, setLikes] = useState({likedByOwner: false, count: 0})
     const [liking, setLiking] = useState(false)
-    const { id, title, content, tags, meta, slug, author, thumbnail, createdAt } = post;
+    const { id, title, content, tags, meta, slug, author, thumbnail, createdAt, relatedPosts } = post;
 
+    console.log(relatedPosts)
     const user = useAuth()
 
     const getLikeLabel = useCallback(() : string => {
@@ -55,6 +57,7 @@ const SinglePost: NextPage<Props> = ({ post }) => {
         .then(({data}) => 
             setLikes({likedByOwner: data.likedByOwner, count: data.likesCount})
         ).catch((err) => console.log(err))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (
@@ -89,9 +92,29 @@ const SinglePost: NextPage<Props> = ({ post }) => {
                         busy={liking}
                         />
                 </div>
+
                 <div className="pt-10">
                     <AuthorInfo profile={JSON.parse(author)} />
                 </div>
+
+                <div className="pt-5">
+                    <h3 className='text-xl font-semibold bg-secondary-dark text-primary p-2 mb-4'>
+                        Related Posts:
+                    </h3>
+                    <div className='flex flex-col space-y-4'>
+                        {relatedPosts.map(p => {
+                            return (
+                            <Link legacyBehavior key={p.slug} href={p.slug}>
+                                <a className='font-semibold text-primary-dark dark:text-primary hover:underline'>
+                                    {p.title}
+                                </a>
+                            </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+
+
                 <Comments belongsTo={id}/>
             </div>
         </DefaultLayout>
@@ -129,6 +152,11 @@ interface StaticPropsResponse {
         thumbnail: string,
         createdAt: string,
         author: string
+        relatedPosts: {
+            id: string;
+            title: string;
+            slug: string;
+        }[]
     }
 }
 
@@ -137,7 +165,36 @@ export const getStaticProps: GetStaticProps<StaticPropsResponse, { slug: string 
         await dbConnect()
         const post = await Post.findOne({ slug: params?.slug }).populate('author');
         if (!post) return { notFound: true };
-        const { _id, title, content, meta, slug, tags, thumbnail, createdAt, author } = post;
+
+        const posts = await Post.find({
+            tags: {$in: [...post.tags]},
+            _id: {$ne: post._id},
+        })
+            .sort({createdAt: 'desc'})
+            .limit(5)
+            .select('slug title')
+
+        const relatedPosts = posts.map(p => {
+            return {
+                id: p._id.toString(),
+                title: p.title,
+                slug: p.slug
+            }
+        })
+
+
+        const { 
+            _id, 
+            title, 
+            content, 
+            meta, 
+            slug, 
+            tags, 
+            thumbnail, 
+            createdAt, 
+            author 
+        } = post;
+
 
         const admin = await User.findOne({role: 'admin'})
         const authorInfo = (author || admin) as any
@@ -161,6 +218,7 @@ export const getStaticProps: GetStaticProps<StaticPropsResponse, { slug: string 
                     thumbnail: thumbnail?.url || '',
                     createdAt: createdAt.toString(),
                     author: JSON.stringify(postAuthor),
+                    relatedPosts
                 },
             },
             revalidate: 30
