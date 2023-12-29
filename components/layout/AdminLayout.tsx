@@ -33,7 +33,7 @@ const AdminLayout: FC<Props> = ({title, children}): JSX.Element => {
                     <AiOutlineFileAdd size={24} />    
                 </a>        
             </Link>
-        </div>;
+        </div>
         </>
         );
 };
