@@ -52,7 +52,7 @@ const SeoForm: FC<Props> = ({
 
     return <div className='space-y-4'>
         <h1 className='text-primary-dark dark:text-primary text-xl font-semibold'>
-            SEO Section
+            Post data
         </h1>
         <Input 
             value={slug}

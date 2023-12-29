@@ -22,7 +22,6 @@ import Underline from '@tiptap/extension-underline';
 import InsertLink from '../Link/InsertLink';
 import { linkOption } from '../Link/LinkForm';
 import EmbedYoutube from './EmbedYoutube';
-import { url } from 'inspector';
 
 interface Props {
     editor: Editor | null;
@@ -134,7 +133,7 @@ const ToolBar: FC<Props> = ({
             <RiDoubleQuotesL/>
         </Button>
 
-        <Button 
+        {/* <Button 
             active={editor.isActive('code')}
             onClick={() => getFocusedEditor(editor).toggleCode().run()}
         >
@@ -146,7 +145,7 @@ const ToolBar: FC<Props> = ({
             onClick={() => getFocusedEditor(editor).toggleCodeBlock().run()}
         >
             <BsBraces/>
-        </Button>
+        </Button> */}
 
         <InsertLink onSubmit={handleLinkSubmit}/>
 
