@@ -10,6 +10,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { UserProfile } from '@/utils/types';
 import useDarkMode from '@/hooks/useDarkMode';
+import { BsFillInfoCircleFill } from "react-icons/bs";
 
 interface Props { }
 

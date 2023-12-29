@@ -12,23 +12,25 @@ interface Props {
     onDeleteClick?(): void;
 }
 
-const PostCard: FC<Props> = ({ 
-    controls = false, 
-    post, busy, 
-    onDeleteClick 
+const PostCard: FC<Props> = ({
+    controls = false,
+    post, busy,
+    onDeleteClick
 }): JSX.Element => {
     const { title, slug, meta, createdAt, tags, thumbnail } = post;
     return (
         <div className='rounded shadow-sm shadow-secondary-dark overflow-hidden bg-primary dark:bg-primary-dark transition flex flex-col h-full'>
-            <div className="aspect-video relative">
-                {!thumbnail ? (
-                    <div className="w-full h-full flex items-center justify-center text-secondary-dark opacity-50 font-semibold">
-                        No image
-                    </div>
-                ) : (
-                    <Image src={thumbnail} layout='fill' alt='Thumbnail' />
-                )}
-            </div>
+            <Link href={"/" + slug}>
+                <div className="aspect-video relative">
+                    {!thumbnail ? (
+                        <div className="w-full h-full flex items-center justify-center text-secondary-dark opacity-50 font-semibold">
+                            No image
+                        </div>
+                    ) : (
+                        <Image src={thumbnail} layout="fill" alt="Thumbnail" />
+                    )}
+                </div>
+            </Link>
 
             <div className='p-2 flex-1 flex flex-col '>
                 <Link legacyBehavior href={'/' + slug}>
