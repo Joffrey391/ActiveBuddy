@@ -82,7 +82,7 @@ const SinglePost: NextPage<Props> = ({ post }) => {
 
                 <div className="prose prose-lg dark:prose-invert max-w-full mx-auto">
                     {parse(content)}
-                S</div>
+                </div>
 
                 <div className='py-10'>
                     <LikeHeart 

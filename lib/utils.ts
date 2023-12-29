@@ -17,7 +17,7 @@ export const readFile = async <T extends object>(
     req: NextApiRequest
 ): Promise<FormidablePromise<T>> => {
     const form = formidable();
-    const [fields, files] = await form.parse(req);
+    const [fields, files]: any = await form.parse(req);
 
     const result: any = {};
 

@@ -1,7 +1,7 @@
 import cloudinary from "@/lib/cloudinary";
 import { isAdmin, readFile } from "@/lib/utils";
 import { postValidationSchema, validateSchema } from "@/lib/validator";
-import Post from "@/models/Post";
+import Post, { PostModelSchema } from "@/models/Post";
 import { IncomingPost } from "@/utils/types";
 import formidable from "formidable";
 import { NextApiHandler } from "next"
@@ -23,15 +23,18 @@ const handler: NextApiHandler = (req, res) => {
 };
 
 const removePost: NextApiHandler = async (req, res) => {
+    function isPostModelSchema(obj: any): obj is PostModelSchema {
+        return obj && typeof obj === 'object' && 'thumbnail' in obj;
+    }
     try {
         const admin = await isAdmin(req, res);
         if(!admin) return res.status(401).json({error: 'unauthorized request!'});
 
         const postId = req.query.postId as string;
         const post = await Post.findByIdAndDelete(postId);
-        if(!post) return res.status(404).json({error: 'Post not found'});
+        if (!post || !isPostModelSchema(post)) return res.status(404).json({ error: 'Post not found' });
+
     
-        
         const publicId = post.thumbnail?.public_id
         if(publicId) {
             await cloudinary.uploader.destroy(publicId);

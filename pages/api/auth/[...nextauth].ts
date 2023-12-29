@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
                 const oldUser = await User.findOne({ email: profile.email });
                 const userProfile = {
                     email: profile.email,
-                    name: profile.name | profile.login,
+                    name: profile.name || profile.login,
                     avatar: profile.avatar_url,
                     role: 'user',
                 };
@@ -28,7 +28,7 @@ export const authOptions: NextAuthOptions = {
                 }
                 return {id: profile.id, ...userProfile};
             },
-        })
+        }) 
     ],
     callbacks: {
         jwt({token, user}) {
